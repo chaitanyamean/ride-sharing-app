@@ -1,6 +1,15 @@
 package com.example.ride_sharing_app.dto;
 
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "driver")
 public class Driver {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String name;
     private String email;
@@ -8,11 +17,17 @@ public class Driver {
     private String vehicleNumber;
     private String vehicleType;
     private DriverStatus status;
+
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "latitude",  column = @Column(name = "current_lat")),
+        @AttributeOverride(name = "longitude", column = @Column(name = "current_lng")),
+        @AttributeOverride(name = "address",   column = @Column(name = "current_address")),
+        @AttributeOverride(name = "timestamp", column = @Column(name = "current_location_timestamp"))
+    })
     private Location currentLocation;
     private long lastLocationUpdate;
 
-    public Driver() {
-    }
 
     public Driver(String id, String name, String email, String phone, String vehicleNumber, String vehicleType,
                   DriverStatus status) {
