@@ -1,7 +1,7 @@
 package com.example.ride_sharing_app.service;
 
 import com.example.ride_sharing_app.dto.*;
-import com.example.ride_sharing_app.dto.strategy.DriverMatchingStrategy;
+import com.example.ride_sharing_app.dto.strategy.DriverMatchingStrategyFactory;
 import com.example.ride_sharing_app.repository.DriverRepository;
 import com.example.ride_sharing_app.repository.RideRepository;
 
@@ -15,18 +15,18 @@ public class MatchingService {
 
     private final DriverRepository driverRepository;
     private final RideRepository rideRepository;
-    private final DriverMatchingStrategy matchingStrategy;
+    private final DriverMatchingStrategyFactory strategyFactory;  // ← factory instead of fixed strategy
     private final LockService lockService;
     private final NotificationService notificationService;
 
     public MatchingService(DriverRepository driverRepository,
                            RideRepository rideRepository,
-                           DriverMatchingStrategy matchingStrategy,
+                           DriverMatchingStrategyFactory strategyFactory,
                            LockService lockService,
                            NotificationService notificationService) {
         this.driverRepository = driverRepository;
         this.rideRepository = rideRepository;
-        this.matchingStrategy = matchingStrategy;
+        this.strategyFactory = strategyFactory;
         this.lockService = lockService;
         this.notificationService = notificationService;
     }
@@ -36,9 +36,10 @@ public class MatchingService {
             return Optional.empty();
         }
 
-        List<Driver> availableDrivers = driverRepository.findByStatus(DriverStatus.ONLINE); // get this into strategy
-        List<Driver> suggestions = matchingStrategy.findMatchingDrivers(ride.getPickupLocation(), availableDrivers,
-                DEFAULT_MAX_RESULTS);
+        List<Driver> availableDrivers = driverRepository.findByStatus(DriverStatus.ONLINE);
+        // Ask the factory which strategy to use based on this rider's type
+        List<Driver> suggestions = strategyFactory.getStrategy(ride.getRiderId())
+                .findMatchingDrivers(ride.getPickupLocation(), availableDrivers, DEFAULT_MAX_RESULTS);
         if (suggestions.isEmpty()) {
             return Optional.empty();
         }

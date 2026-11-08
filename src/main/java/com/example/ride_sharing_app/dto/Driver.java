@@ -96,6 +96,14 @@ public class Driver {
         this.status = status;
     }
 
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
     public Location getCurrentLocation() {
         return currentLocation;
     }
